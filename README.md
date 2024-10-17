@@ -2,7 +2,7 @@
 
 ## 🚀 Quick Start
 
-To embark on your cross-chain adventure, simply use the following incantation:
+Please use the following incantation:
 
 ```bash
 cargo run -- [COMMAND]
@@ -21,12 +21,12 @@ Options:
 
 ## 🗺️ Navigation
 
-Our magical CLI offers the following pathways:
+Our CLI offers the following pathways:
 
 - 🌞 `solana`: For Solana -> Solana single domain intents
 - 🌙 `ethereum`: For Ethereum -> Ethereum single domain intents
-- 🌠 `solana-ethereum`: For the daring Solana -> Ethereum cross-domain journey
-- 🌌 `ethereum-solana`: For the brave Ethereum -> Solana cross-domain expedition
+- 🌠 `solana-ethereum`: For the daring Solana -> Ethereum cross-domain 
+- 🌌 `ethereum-solana`: For the brave Ethereum -> Solana cross-domain
 
 ## 🧭 Command Details
 
@@ -36,7 +36,7 @@ Our magical CLI offers the following pathways:
 cargo run -- solana <amount_in> <token_in> <token_out> <amount_out> <timeout>
 ```
 
-#### 🔮 Special Solana Incantation
+#### 🔮 Solana Indication
 If it's your first time sending `token_in` to the Escrow Contract, you'll need to create a token account. You have two options:
 
 1. Use:
