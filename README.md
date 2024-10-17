@@ -2,8 +2,6 @@
 
 ## 🚀 Quick Start
 
-Please use the following incantation:
-
 ```bash
 cargo run -- [COMMAND]
 
