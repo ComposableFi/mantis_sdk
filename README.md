@@ -6,6 +6,17 @@ To embark on your cross-chain adventure, simply use the following incantation:
 
 ```bash
 cargo run -- [COMMAND]
+
+Commands:
+  solana           Solana -> Solana single domain intent
+  solana-ethereum  Solana -> Ethereum cross-domain intent
+  ethereum         Ethereum -> Ethereum single domain intent
+  ethereum-solana  Ethereum -> Solana cross-domain intent
+  help             Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
 ```
 
 ## 🗺️ Navigation
