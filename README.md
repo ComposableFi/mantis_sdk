@@ -1,6 +1,5 @@
-# 🌈 Mantis SDK Intent CLI: 
+# Mantis SDK Intent CLI: 
 
-Welcome to the magical world of cross-chain escrow intents! 🧙‍♂️✨ This CLI tool is your wand for handling Solana and Ethereum escrow intents, both within single domains and across the mystical bridge between chains.
 
 ## 🚀 Quick Start
 
