@@ -41,7 +41,7 @@ pub async fn _create_token_account()
 cargo run -- ethereum <token_in> <amount_in> <token_out> <amount_out> <timeout>
 ```
 
-#### 🔓 Ethereum Approval Spell
+#### 🔓 Ethereum Approval
 Before your first Ethereum transaction, you'll need to send this approval:
 
 ```rust
