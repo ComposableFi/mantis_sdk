@@ -1,6 +1,5 @@
 # Mantis SDK Intent CLI: 
 
-
 ## 🚀 Quick Start
 
 To embark on your cross-chain adventure, simply use the following incantation:
@@ -26,11 +25,30 @@ Our magical CLI offers the following pathways:
 cargo run -- solana <amount_in> <token_in> <token_out> <amount_out> <timeout>
 ```
 
+#### 🔮 Special Solana Incantation
+If it's your first time sending `token_in` to the Escrow Contract, you'll need to create a token account. You have two options:
+
+1. Use:
+   ```rust
+   pub async fn _create_token_account()
+   ```
+
+2. Or, for a more automated approach, send a small amount of `token_in` to `AhfoGVmS19tvkEG2hBuZJ1D6qYEjyFmXZ1qPoFD6H4Mj` using your Phantom wallet. This will automatically create the token account, saving you from calling the function.
+
 ### 🌙 Ethereum Single Domain
 
 ```bash
 cargo run -- ethereum <token_in> <amount_in> <token_out> <amount_out> <timeout>
 ```
+
+#### 🔓 Ethereum Approval Spell
+Before your first Ethereum transaction, you'll need to send this approval:
+
+```rust
+pub async fn _approve_erc20()
+```
+
+This only needs to be done once to grant the necessary permissions.
 
 ### 🌠 Solana to Ethereum
 
@@ -46,16 +64,24 @@ cargo run -- ethereum-solana <token_in> <amount_in> <token_out> <amount_out> <ti
 
 ## 🎭 Arguments Explained
 
-- `amount_in`: The treasure you're sending (in tokens)
-- `token_in`: The magical address of your input token
-- `token_out`: The mystical address of your desired output token
-- `amount_out`: The treasure you expect to receive (in tokens)
-- `timeout`: The duration (in seconds) before your intent turns into a pumpkin 🎃
-- `dst_user`: The address of the lucky recipient (for cross-domain spells only)
+- `amount_in`: The amount you're sending (in tokens)
+- `token_in`: The address of your input token
+- `token_out`: The address of your desired output token
+- `amount_out`: The amount you expect to receive (in tokens)
+- `timeout`: The duration in UNIX timestamp before you can withdraw token_in
+- `dst_user`: The address of the recipient (for cross-domain only)
+
+## 🗝️ Environment Variables
+
+Make sure to set up your .env file with these keys:
+
+```env
+ETHEREUM_RPC=""      # Your Ethereum node RPC URL
+ETHEREUM_PKEY=""     # Your Ethereum private key
+SOLANA_KEYPAIR=""    # Your Solana wallet private key (e.g., Phantom wallet private key)
+```
 
 ## 🌟 Examples
-
-Here are some examples to get you started on your cross-chain odyssey:
 
 1. 🌞 Solana Single Domain
    ```bash
@@ -76,9 +102,3 @@ Here are some examples to get you started on your cross-chain odyssey:
    ```bash
    cargo run -- ethereum-solana 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 100 EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v 99 7200 9ZNTfG4NyQgxy2SWjSiQoUyBPEvXT2xo7fKc5hPYYJ7b
    ```
-
-## 🎩 Final Words
-
-Remember, with great power comes great responsibility. Use this magical tool wisely, and may your cross-chain adventures be prosperous! If you encounter any mystical bugs or have ideas for new spells, feel free to open an issue or submit a pull request.
-
-Happy bridging! 🌈🚀
