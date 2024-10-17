@@ -29,9 +29,9 @@ cargo run -- solana <amount_in> <token_in> <token_out> <amount_out> <timeout>
 If it's your first time sending `token_in` to the Escrow Contract, you'll need to create a token account. You have two options:
 
 1. Use:
-   ```rust
-   pub async fn _create_token_account()
-   ```
+```rust
+pub async fn _create_token_account()
+```
 
 2. Or, for a more automated approach, send a small amount of `token_in` to `AhfoGVmS19tvkEG2hBuZJ1D6qYEjyFmXZ1qPoFD6H4Mj` using your Phantom wallet. This will automatically create the token account, saving you from calling the function.
 
