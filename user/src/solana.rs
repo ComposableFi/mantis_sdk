@@ -157,35 +157,3 @@ pub fn escrow_and_store_intent_cross_chain_solana(
         Err(err) => Err(format!("Transaction failed: {}", err)),
     }
 }
-
-// this is only needed if is first time token_in is sent to Escrow Contract
-// you can also send a small amount of this token_in to AhfoGVmS19tvkEG2hBuZJ1D6qYEjyFmXZ1qPoFD6H4Mj by Phantom wallet
-// so token account is created in an automatic way and you don't need to call this function
-pub async fn _create_token_account(
-    owner: &Pubkey,
-    mint: &Pubkey,
-    fee_payer: &Keypair,
-    rpc_client: &RpcClient,
-) -> Result<()> {
-    let create_account_ix = instruction::create_associated_token_account(
-        &fee_payer.pubkey(),
-        owner,
-        mint,
-        &pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
-    );
-
-    let mut transaction =
-        Transaction::new_with_payer(&[create_account_ix], Some(&fee_payer.pubkey()));
-
-    let recent_blockhash: Hash = rpc_client.get_latest_blockhash().await.unwrap();
-    transaction.sign(&[fee_payer], recent_blockhash);
-
-    rpc_client.simulate_transaction(&transaction).await.unwrap();
-
-    rpc_client
-        .send_and_confirm_transaction(&transaction)
-        .await
-        .unwrap();
-
-    Ok(())
-}
