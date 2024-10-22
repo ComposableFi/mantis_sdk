@@ -1,6 +1,7 @@
-mod ethereum;
-mod solana;
 mod cli;
+mod ethereum;
+mod quotes;
+mod solana;
 
 use std::env;
 use std::rc::Rc;
@@ -11,47 +12,56 @@ use anchor_client::solana_sdk::signature::Keypair;
 use anchor_client::{Client, Cluster};
 use anyhow::Result;
 use clap::ArgMatches;
+use ethers::types::Address;
+use ethers::types::U256;
 use rand::{distributions::Alphanumeric, Rng};
 use solana_sdk::bs58;
 use solana_sdk::signature::Signer;
-use ethers::types::U256;
 use std::str::FromStr;
-use ethers::types::Address;
 
-use crate::cli::parse_common_args;
 use crate::cli::parse_cli;
-use crate::solana::{escrow_and_store_intent_cross_chain_solana, escrow_and_store_intent_solana};
+use crate::cli::parse_common_args;
 use crate::ethereum::escrow_and_store_intent_ethereum;
+use crate::solana::{escrow_and_store_intent_cross_chain_solana, escrow_and_store_intent_solana};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
     let matches = parse_cli();
 
-    // Execute the appropriate function based on the subcommand used
-    if let Some(solana_matches) = matches.subcommand_matches("solana") {
-        let solana_matches_cloned = solana_matches.clone();  
-        tokio::task::spawn_blocking(move || {
-            handle_solana_single_domain_intent(&solana_matches_cloned)
-                .unwrap();
-        })
-        .await
-        .expect("Failed to execute blocking code on solana");
-    } else if let Some(solana_ethereum_matches) = matches.subcommand_matches("solana-ethereum") {
-        let solana_ethereum_matches_cloned = solana_ethereum_matches.clone(); 
-        tokio::task::spawn_blocking(move || {
-            handle_solana_ethereum_cross_domain_intent(&solana_ethereum_matches_cloned)
-                .unwrap();
-        })
-        .await
-        .expect("Failed to execute blocking code on solana-ethereum");
-    } else if let Some(ethereum_matches) = matches.subcommand_matches("ethereum") {
-        let ethereum_matches_cloned = ethereum_matches.clone();
+    if let Some(new_intent_matches) = matches.subcommand_matches("new-intent") {
+        // Execute the appropriate function based on the subcommand used
+        if let Some(solana_matches) = new_intent_matches.subcommand_matches("solana") {
+            let solana_matches_cloned = solana_matches.clone();
+            tokio::task::spawn_blocking(move || {
+                handle_solana_single_domain_intent(&solana_matches_cloned).unwrap();
+            })
+            .await
+            .expect("Failed to execute blocking code on solana");
+        } else if let Some(solana_ethereum_matches) =
+            new_intent_matches.subcommand_matches("solana-ethereum")
+        {
+            let solana_ethereum_matches_cloned = solana_ethereum_matches.clone();
+            tokio::task::spawn_blocking(move || {
+                handle_solana_ethereum_cross_domain_intent(&solana_ethereum_matches_cloned)
+                    .unwrap();
+            })
+            .await
+            .expect("Failed to execute blocking code on solana-ethereum");
+        } else if let Some(ethereum_matches) = new_intent_matches.subcommand_matches("ethereum") {
+            let ethereum_matches_cloned = ethereum_matches.clone();
             handle_ethereum_single_domain_intent(&ethereum_matches_cloned)
-                .await.unwrap();
-    } else if let Some(ethereum_solana_matches) = matches.subcommand_matches("ethereum-solana") {
+                .await
+                .unwrap();
+        } else if let Some(ethereum_solana_matches) =
+            new_intent_matches.subcommand_matches("ethereum-solana")
+        {
             handle_ethereum_solana_cross_domain_intent(&ethereum_solana_matches)
-                .await.unwrap();
+                .await
+                .unwrap();
+        }
+    } else if let Some(query_quote_matches) = matches.subcommand_matches("query-quote") {
+        handle_quote_query(&query_quote_matches).await.unwrap();
     }
 
     Ok(())
@@ -71,10 +81,12 @@ async fn handle_ethereum_single_domain_intent(matches: &ArgMatches) -> Result<()
         amount_in,
         token_out,
         amount_out,
-        String::default(), 
+        String::default(),
         true,
         timeout,
-    ).await {
+    )
+    .await
+    {
         Ok(receipt) => {
             println!("Transaction successful, receipt: {:?}", receipt);
         }
@@ -97,14 +109,10 @@ async fn handle_ethereum_solana_cross_domain_intent(matches: &ArgMatches) -> Res
 
     // Call the escrow function for cross domain
     match escrow_and_store_intent_ethereum(
-        token_in,
-        amount_in,
-        token_out,
-        amount_out,
-        dst_user,
-        false,
-        timeout,
-    ).await {
+        token_in, amount_in, token_out, amount_out, dst_user, false, timeout,
+    )
+    .await
+    {
         Ok(receipt) => {
             println!("Transaction successful, receipt: {:?}", receipt);
         }
@@ -117,16 +125,14 @@ async fn handle_ethereum_solana_cross_domain_intent(matches: &ArgMatches) -> Res
 }
 
 /// Handle the Solana -> Solana intent.
-fn handle_solana_single_domain_intent(
-    matches: &ArgMatches,
-) -> Result<()> {
+fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> {
     let private_key_bytes =
-    bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
-        .into_vec()
-        .expect("Failed to decode Base58 private key");
+        bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
+            .into_vec()
+            .expect("Failed to decode Base58 private key");
 
-let wallet =
-    Rc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
+    let wallet =
+        Rc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
 
     let auctioneer_state = Pubkey::find_program_address(&[b"auctioneer"], &bridge_escrow::ID).0;
 
@@ -169,16 +175,14 @@ let wallet =
 }
 
 /// Handle the Solana -> Ethereum cross-domain intent.
-fn handle_solana_ethereum_cross_domain_intent(
-    matches: &ArgMatches,
-) -> Result<()> {
+fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Result<()> {
     let private_key_bytes =
-    bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
-        .into_vec()
-        .expect("Failed to decode Base58 private key");
+        bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
+            .into_vec()
+            .expect("Failed to decode Base58 private key");
 
-let wallet =
-    Rc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
+    let wallet =
+        Rc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
 
     let auctioneer_state = Pubkey::find_program_address(&[b"auctioneer"], &bridge_escrow::ID).0;
 
@@ -229,3 +233,32 @@ fn generate_random_intent_id() -> String {
         .collect()
 }
 
+async fn handle_quote_query(matches: &ArgMatches) -> Result<()> {
+    let auctioneer_url = env::var("AUCTIONEER_URL").expect("AUCTIONEER_URL must be set");
+    let (subcmd, cmd_matches) = matches.subcommand().expect("No subcommand given");
+    let networks: Vec<&str> = subcmd.split("-").collect();
+    let (src_chain, dst_chain) =
+        if networks.len() > 1 {
+            (networks[0].to_string(), networks[1].to_string())
+        } else {
+            (networks[0].to_string(), networks[0].to_string())
+        };    
+    let query = quotes::Query {
+        src_chain,
+        dst_chain,
+        token_in: cmd_matches.get_one::<String>("token_in").unwrap().to_string(),
+        token_out: cmd_matches.get_one::<String>("token_out").unwrap().to_string(),
+        amount: cmd_matches.get_one::<u64>("amount").unwrap().to_string(),
+        src_address: cmd_matches.get_one::<String>("src_address").unwrap().to_string(),
+        dst_address: cmd_matches.get_one::<String>("dst_address").unwrap().to_string(),
+    };
+    let http_client = reqwest::Client::new();
+    let request = http_client.get(format!("{}/query_quote", auctioneer_url))
+        .header("Content-Type", "application/json")
+        .json(&query);
+    let response = request.send().await?;
+    let output: quotes::QuoteResponse = response.json().await?;
+    // let output = response.text().await?;
+    println!("{:?}", output);
+    Ok(())
+}

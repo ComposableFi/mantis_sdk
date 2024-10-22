@@ -3,28 +3,57 @@ use std::str::FromStr;
 use crate::Pubkey;
 
 pub fn parse_cli() -> ArgMatches {
+    let quote_query_args = quote_query_args();
     Command::new("Mantis SDK Intent CLI")
         .version("1.0")
         .about("Handles Solana and Ethereum escrow intents. Single Domain & Cross Domain")
         .subcommand(
-            Command::new("solana")
-                .about("Solana -> Solana single domain intent")
-                .args(common_args()), // Use common_args for Solana
+            Command::new("submit-intent")
+                .about("Submit a new intent to the network")
+                .subcommand(
+                    Command::new("solana")
+                        .about("Solana -> Solana single domain intent")
+                        .args(common_args()), // Use common_args for Solana
+                )
+                .subcommand(
+                    Command::new("solana-ethereum")
+                        .about("Solana -> Ethereum cross-domain intent")
+                        .args(cross_domain_args()), // Use cross_domain_args for cross domain
+                )
+                .subcommand(
+                    Command::new("ethereum")
+                        .about("Ethereum -> Ethereum single domain intent")
+                        .args(common_args_ethereum()), // Use common_args_ethereum for Ethereum
+                )
+                .subcommand(
+                    Command::new("ethereum-solana")
+                        .about("Ethereum -> Solana cross-domain intent")
+                        .args(cross_domain_args_ethereum()), // Use Ethereum cross domain args
+                )
         )
         .subcommand(
-            Command::new("solana-ethereum")
-                .about("Solana -> Ethereum cross-domain intent")
-                .args(cross_domain_args()), // Use cross_domain_args for cross domain
-        )
-        .subcommand(
-            Command::new("ethereum")
-                .about("Ethereum -> Ethereum single domain intent")
-                .args(common_args_ethereum()), // Use common_args_ethereum for Ethereum
-        )
-        .subcommand(
-            Command::new("ethereum-solana")
-                .about("Ethereum -> Solana cross-domain intent")
-                .args(cross_domain_args_ethereum()), // Use Ethereum cross domain args
+            Command::new("query-quote")
+                .about("Query an amount of output tokens offered for a given amount of input tokens")
+                .subcommand(
+                    Command::new("solana")
+                        .about("Solana -> Solana single domain swap")
+                        .args(quote_query_args.clone()),
+                )
+                .subcommand(
+                    Command::new("solana-ethereum")
+                        .about("Solana -> Ethereum cross-domain swap")
+                        .args(quote_query_args.clone()),
+                )
+                .subcommand(
+                    Command::new("ethereum")
+                        .about("Ethereum -> Ethereum single domain swap")
+                        .args(quote_query_args.clone()),
+                )
+                .subcommand(
+                    Command::new("ethereum-solana")
+                        .about("Ethereum -> Solana cross-domain swap")
+                        .args(quote_query_args),
+                )
         )
         .get_matches()
 }
@@ -115,4 +144,25 @@ fn cross_domain_args_ethereum() -> Vec<Arg> {
             .help("Destination user address"),
     );
     args
+}
+
+fn quote_query_args() -> Vec<Arg> {
+    vec![
+        Arg::new("token_in")
+            .required(true)
+            .help("Input token address"),
+        Arg::new("src_address")
+            .required(true)
+            .help("The address where input tokens are coming from"),
+        Arg::new("amount")
+            .required(true)
+            .value_parser(clap::value_parser!(u64)) 
+            .help("Amount of input tokens to be swapped"),
+        Arg::new("dst_address")
+            .required(true)
+            .help("The address where output tokens are going to"),
+        Arg::new("token_out")
+            .required(true)
+            .help("Output token address"),
+    ]
 }
