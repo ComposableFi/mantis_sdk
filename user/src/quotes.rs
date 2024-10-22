@@ -12,6 +12,26 @@ pub struct Query {
     pub dst_address: String,
 }
 
+impl Query {
+    pub async fn exec_with(
+        &self,
+        client: &reqwest::Client,
+        url: &str,
+    ) -> Result<QuoteResponse, reqwest::Error> {
+        let request = client
+            .get(url)
+            .header("Content-Type", "application/json")
+            .json(self);
+        let response = request.send().await?;
+        response.json().await
+    }
+
+    pub async fn exec(&self, url: &str) -> Result<QuoteResponse, reqwest::Error> {
+        let client = reqwest::Client::new();
+        self.exec_with(&client, url).await
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MeanQuote {
     #[serde(rename = "token_out")]

@@ -252,12 +252,7 @@ async fn handle_quote_query(matches: &ArgMatches) -> Result<()> {
         src_address: cmd_matches.get_one::<String>("src_address").unwrap().to_string(),
         dst_address: cmd_matches.get_one::<String>("dst_address").unwrap().to_string(),
     };
-    let http_client = reqwest::Client::new();
-    let request = http_client.get(format!("{}/query_quote", auctioneer_url))
-        .header("Content-Type", "application/json")
-        .json(&query);
-    let response = request.send().await?;
-    let output: quotes::QuoteResponse = response.json().await?;
+    let output: quotes::QuoteResponse = query.exec(&format!("{}/query_quote", auctioneer_url)).await?;
 
     let mut solver_width = 0;
     let mut token_width = 0;
