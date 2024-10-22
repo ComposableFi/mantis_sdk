@@ -74,7 +74,7 @@ pub async fn escrow_and_store_intent_ethereum(
 
     // Set dst_user based on whether it's a single domain or cross domain transaction
     if single_domain {
-        dst_user = src_user.to_string()
+        dst_user = format!("0x{:x}", src_user);
     }
 
     let intent = (
