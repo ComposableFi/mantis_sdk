@@ -14,8 +14,10 @@ pub struct Query {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MeanQuote {
-    pub token_out: String,
-    pub amount_out: String,
+    #[serde(rename = "token_out")]
+    pub token: String,
+    #[serde(rename = "amount_out")]
+    pub amount: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -258,7 +258,55 @@ async fn handle_quote_query(matches: &ArgMatches) -> Result<()> {
         .json(&query);
     let response = request.send().await?;
     let output: quotes::QuoteResponse = response.json().await?;
-    // let output = response.text().await?;
-    println!("{:?}", output);
+
+    let mut solver_width = 0;
+    let mut token_width = 0;
+    let mut amount_width = 0;
+    for quote in output.outputs.iter() {
+        solver_width = std::cmp::max(solver_width, quote.solver_id.len());
+        token_width = std::cmp::max(token_width, quote.quote.token.len());
+        amount_width = std::cmp::max(amount_width, quote.quote.amount.len());
+    }
+    let hline = format!(
+        "+-{}-+-{}-+-{}-+",
+        "-".repeat(solver_width),
+        "-".repeat(token_width),
+        "-".repeat(amount_width)
+    );
+
+    println!("Quotes:");
+    println!("{}", hline);
+    println!(
+        "| {:<solver_width$} | {:<token_width$} | {:<amount_width$} |",
+        "Solver",
+        "Output token",
+        "Amount",
+        solver_width = solver_width,
+        token_width = token_width,
+        amount_width = amount_width
+    );
+    println!("{}", hline);
+    for quote in output.outputs.iter() {
+        println!(
+            "| {:<solver_width$} | {:<token_width$} | {:<amount_width$} |",
+            quote.solver_id,
+            quote.quote.token,
+            quote.quote.amount,
+            solver_width = solver_width,
+            token_width = token_width,
+            amount_width = amount_width
+        );
+    }
+    println!("{}", hline);
+    println!(
+        "| {:<solver_width$} | {:<token_width$} | {:<amount_width$} |",
+        "",
+        "Mean amount",
+        output.mean_output.amount,
+        solver_width = solver_width,
+        token_width = token_width,
+        amount_width = amount_width
+    );
+    println!("{}", hline);
     Ok(())
 }
