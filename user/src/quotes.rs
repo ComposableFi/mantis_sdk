@@ -12,21 +12,30 @@ pub struct Query {
     pub dst_address: String,
 }
 
+pub enum QueryError {
+    HttpError(reqwest::Error),
+    AuctioneerError(String),
+}
+
 impl Query {
     pub async fn exec_with(
         &self,
         client: &reqwest::Client,
         url: &str,
-    ) -> Result<QuoteResponse, reqwest::Error> {
+    ) -> Result<QuoteResponse, QueryError> {
         let request = client
             .get(url)
             .header("Content-Type", "application/json")
             .json(self);
-        let response = request.send().await?;
-        response.json().await
+        let response = request.send().await.map_err(|e| QueryError::HttpError(e))?;
+        if response.status().is_success() {
+            response.json().await.map_err(|e| QueryError::HttpError(e))
+        } else {
+            Err(QueryError::AuctioneerError(response.text().await.map_err(|e| QueryError::HttpError(e))?))
+        }
     }
 
-    pub async fn exec(&self, url: &str) -> Result<QuoteResponse, reqwest::Error> {
+    pub async fn exec(&self, url: &str) -> Result<QuoteResponse, QueryError> {
         let client = reqwest::Client::new();
         self.exec_with(&client, url).await
     }

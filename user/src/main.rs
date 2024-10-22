@@ -237,71 +237,95 @@ async fn handle_quote_query(matches: &ArgMatches) -> Result<()> {
     let auctioneer_url = env::var("AUCTIONEER_URL").expect("AUCTIONEER_URL must be set");
     let (subcmd, cmd_matches) = matches.subcommand().expect("No subcommand given");
     let networks: Vec<&str> = subcmd.split("-").collect();
-    let (src_chain, dst_chain) =
-        if networks.len() > 1 {
-            (networks[0].to_string(), networks[1].to_string())
-        } else {
-            (networks[0].to_string(), networks[0].to_string())
-        };    
+    let (src_chain, dst_chain) = if networks.len() > 1 {
+        (networks[0].to_string(), networks[1].to_string())
+    } else {
+        (networks[0].to_string(), networks[0].to_string())
+    };
     let query = quotes::Query {
         src_chain,
         dst_chain,
-        token_in: cmd_matches.get_one::<String>("token_in").unwrap().to_string(),
-        token_out: cmd_matches.get_one::<String>("token_out").unwrap().to_string(),
+        token_in: cmd_matches
+            .get_one::<String>("token_in")
+            .unwrap()
+            .to_string(),
+        token_out: cmd_matches
+            .get_one::<String>("token_out")
+            .unwrap()
+            .to_string(),
         amount: cmd_matches.get_one::<u64>("amount").unwrap().to_string(),
-        src_address: cmd_matches.get_one::<String>("src_address").unwrap().to_string(),
-        dst_address: cmd_matches.get_one::<String>("dst_address").unwrap().to_string(),
+        src_address: cmd_matches
+            .get_one::<String>("src_address")
+            .unwrap()
+            .to_string(),
+        dst_address: cmd_matches
+            .get_one::<String>("dst_address")
+            .unwrap()
+            .to_string(),
     };
-    let output: quotes::QuoteResponse = query.exec(&format!("{}/query_quote", auctioneer_url)).await?;
+    match query.exec(&format!("{}/query_quote", auctioneer_url)).await {
+        Ok(output) => {
+            let mut solver_width = 0;
+            let mut token_width = 0;
+            let mut amount_width = 0;
+            for quote in output.outputs.iter() {
+                solver_width = std::cmp::max(solver_width, quote.solver_id.len());
+                token_width = std::cmp::max(token_width, quote.quote.token.len());
+                amount_width = std::cmp::max(amount_width, quote.quote.amount.len());
+            }
+            let hline = format!(
+                "+-{}-+-{}-+-{}-+",
+                "-".repeat(solver_width),
+                "-".repeat(token_width),
+                "-".repeat(amount_width)
+            );
 
-    let mut solver_width = 0;
-    let mut token_width = 0;
-    let mut amount_width = 0;
-    for quote in output.outputs.iter() {
-        solver_width = std::cmp::max(solver_width, quote.solver_id.len());
-        token_width = std::cmp::max(token_width, quote.quote.token.len());
-        amount_width = std::cmp::max(amount_width, quote.quote.amount.len());
+            println!("Quotes:");
+            println!("{}", hline);
+            println!(
+                "| {:<solver_width$} | {:<token_width$} | {:<amount_width$} |",
+                "Solver",
+                "Output token",
+                "Amount",
+                solver_width = solver_width,
+                token_width = token_width,
+                amount_width = amount_width
+            );
+            println!("{}", hline);
+            for quote in output.outputs.iter() {
+                println!(
+                    "| {:<solver_width$} | {:<token_width$} | {:<amount_width$} |",
+                    quote.solver_id,
+                    quote.quote.token,
+                    quote.quote.amount,
+                    solver_width = solver_width,
+                    token_width = token_width,
+                    amount_width = amount_width
+                );
+            }
+            println!("{}", hline);
+            println!(
+                "| {:<solver_width$} | {:<token_width$} | {:<amount_width$} |",
+                "",
+                "Mean amount",
+                output.mean_output.amount,
+                solver_width = solver_width,
+                token_width = token_width,
+                amount_width = amount_width
+            );
+            println!("{}", hline);
+            Ok(())
+        }
+        Err(e) => {
+            match e {
+                quotes::QueryError::AuctioneerError(msg) => {
+                    println!("Auctioneer error: {}", msg);
+                }
+                quotes::QueryError::HttpError(err) => {
+                    println!("HTTP error: {}", err);
+                }
+            }
+            Err(anyhow::Error::msg("Querying quotes failed"))
+        }
     }
-    let hline = format!(
-        "+-{}-+-{}-+-{}-+",
-        "-".repeat(solver_width),
-        "-".repeat(token_width),
-        "-".repeat(amount_width)
-    );
-
-    println!("Quotes:");
-    println!("{}", hline);
-    println!(
-        "| {:<solver_width$} | {:<token_width$} | {:<amount_width$} |",
-        "Solver",
-        "Output token",
-        "Amount",
-        solver_width = solver_width,
-        token_width = token_width,
-        amount_width = amount_width
-    );
-    println!("{}", hline);
-    for quote in output.outputs.iter() {
-        println!(
-            "| {:<solver_width$} | {:<token_width$} | {:<amount_width$} |",
-            quote.solver_id,
-            quote.quote.token,
-            quote.quote.amount,
-            solver_width = solver_width,
-            token_width = token_width,
-            amount_width = amount_width
-        );
-    }
-    println!("{}", hline);
-    println!(
-        "| {:<solver_width$} | {:<token_width$} | {:<amount_width$} |",
-        "",
-        "Mean amount",
-        output.mean_output.amount,
-        solver_width = solver_width,
-        token_width = token_width,
-        amount_width = amount_width
-    );
-    println!("{}", hline);
-    Ok(())
 }
