@@ -21,12 +21,17 @@ Options:
 
 Our CLI offers the following pathways:
 
-- 🌞 `solana`: For Solana -> Solana single domain intents
-- 🌙 `ethereum`: For Ethereum -> Ethereum single domain intents
+- 🌞 `new-intent`: Submit a new intent into the network
+- 🌞 `query-quote`: Submit a new intent into the network
+
+Beneath each of these commands there are 4 sub-commands:
+
+- 🌞 `solana`: For Solana -> Solana single domain interactions
+- 🌙 `ethereum`: For Ethereum -> Ethereum single domain interactions
 - 🌠 `solana-ethereum`: For the daring Solana -> Ethereum cross-domain 
 - 🌌 `ethereum-solana`: For the brave Ethereum -> Solana cross-domain
 
-## 🧭 Command Details
+## 🧭 new-intent Command Details
 
 ### 🌞 Solana Single Domain
 
@@ -70,6 +75,26 @@ cargo run -- ethereum-solana <token_in> <amount_in> <token_out> <amount_out> <ti
 - `timeout`: The duration in UNIX timestamp before you can withdraw token_in
 - `dst_user`: The address of the recipient (for cross-domain only)
 
+## 🎭 query-quote Command details
+
+This command builds a quotes query and dispatches it to the auctioneer given by
+the `AUCTIONEER_URL` environment variable (see below). It waits for the results
+to arrive and presents them. Sub-commands (`ethereum`, `solana`, etc.) determine
+to which networks input token and output token should belong.
+
+Quotes query returns an amount of output tokens that can be swapped for the given
+amount of input token by various solvers available on the network. The result
+contains a list of solvers who can handle the intent along with the amount of
+output tokens each of them is willing to swap for.
+
+## 🎭 Arguments Explained
+
+- `token_in`: The address of your input token
+- `src_address`: The address to send input tokens from
+- `amount`: The amount of tokens to swap
+- `dst_address`: The address to send output tokens to
+- `token_out`: The address of your output token
+
 ## 🗝️ Environment Variables
 
 Make sure to set up your .env file with these keys:
@@ -78,6 +103,7 @@ Make sure to set up your .env file with these keys:
 ETHEREUM_RPC=""      # Your Ethereum node RPC URL
 ETHEREUM_PKEY=""     # Your Ethereum private key
 SOLANA_KEYPAIR=""    # Your Solana wallet private key (e.g., Phantom wallet private key)
+AUCTIONEER_URL=""    # Auctioneer to query quotes from
 ```
 
 ## 🌟 Examples
