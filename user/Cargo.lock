@@ -399,7 +399,7 @@ dependencies = [
  "ark-std",
  "derivative",
  "hashbrown 0.13.2",
- "itertools 0.10.5",
+ "itertools",
  "num-traits",
  "zeroize",
 ]
@@ -416,7 +416,7 @@ dependencies = [
  "ark-std",
  "derivative",
  "digest 0.10.7",
- "itertools 0.10.5",
+ "itertools",
  "num-bigint 0.4.6",
  "num-traits",
  "paste",
@@ -978,7 +978,7 @@ dependencies = [
 [[package]]
 name = "bridge-escrow"
 version = "0.0.3"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -992,7 +992,7 @@ dependencies = [
  "ibc",
  "ibc-client-tendermint-types",
  "ibc-proto",
- "itertools 0.10.5",
+ "itertools",
  "lib 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
  "linear-map",
  "memory 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
@@ -1192,7 +1192,7 @@ dependencies = [
 [[package]]
 name = "cf-guest"
 version = "0.0.0"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "borsh 0.10.4",
  "bytemuck",
@@ -2671,7 +2671,7 @@ dependencies = [
 [[package]]
 name = "guestchain"
 version = "0.0.0"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "borsh 0.10.4",
  "bytemuck",
@@ -3562,15 +3562,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "itertools"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
-dependencies = [
- "either",
-]
-
-[[package]]
 name = "itoa"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3655,7 +3646,7 @@ dependencies = [
 [[package]]
 name = "lib"
 version = "0.0.0"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "base64 0.21.7",
  "borsh 0.10.4",
@@ -3815,7 +3806,7 @@ dependencies = [
 [[package]]
 name = "memory"
 version = "0.0.0"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "derive_more",
 ]
@@ -3880,7 +3871,7 @@ version = "3.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba8ee05284d79b367ae8966d558e1a305a781fc80c9df51f37775169117ba64f"
 dependencies = [
- "borsh 0.10.4",
+ "borsh 0.9.3",
  "num-derive 0.3.3",
  "num-traits",
  "solana-program",
@@ -4595,7 +4586,7 @@ checksum = "22505a5c94da8e3b7c2996394d1c933236c4d743e81a410bcca4e6989fc066a4"
 dependencies = [
  "bytes",
  "heck 0.5.0",
- "itertools 0.12.1",
+ "itertools",
  "log",
  "multimap",
  "once_cell",
@@ -4613,7 +4604,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81bddcdb20abf9501610992b6759a4c888aef7d1a7247ef75e2404275ac24af1"
 dependencies = [
  "anyhow",
- "itertools 0.12.1",
+ "itertools",
  "proc-macro2",
  "quote",
  "syn 2.0.76",
@@ -4643,7 +4634,7 @@ dependencies = [
 [[package]]
 name = "proto-utils"
 version = "0.0.0"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "const_format",
  "derive_more",
@@ -5245,7 +5236,7 @@ dependencies = [
 [[package]]
 name = "sealable-trie"
 version = "0.0.0"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "ascii 1.1.0",
  "base64 0.21.7",
@@ -5596,7 +5587,7 @@ dependencies = [
 [[package]]
 name = "solana-allocator"
 version = "0.0.3"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "bytemuck",
  "solana-program",
@@ -5741,7 +5732,7 @@ dependencies = [
  "ibc",
  "ibc-client-tendermint-types",
  "ibc-proto",
- "itertools 0.10.5",
+ "itertools",
  "lib 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=fast-bridge)",
  "linear-map",
  "memory 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=fast-bridge)",
@@ -5766,7 +5757,7 @@ dependencies = [
 [[package]]
 name = "solana-ibc"
 version = "0.0.3"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
@@ -5779,7 +5770,7 @@ dependencies = [
  "ibc",
  "ibc-client-tendermint-types",
  "ibc-proto",
- "itertools 0.10.5",
+ "itertools",
  "lib 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
  "linear-map",
  "memory 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
@@ -5913,7 +5904,7 @@ dependencies = [
  "console_log",
  "curve25519-dalek",
  "getrandom 0.2.15",
- "itertools 0.10.5",
+ "itertools",
  "js-sys",
  "lazy_static",
  "libc",
@@ -5953,7 +5944,7 @@ dependencies = [
  "bincode",
  "eager",
  "enum-iterator",
- "itertools 0.10.5",
+ "itertools",
  "libc",
  "log",
  "num-derive 0.4.2",
@@ -6005,7 +5996,7 @@ dependencies = [
  "async-mutex",
  "async-trait",
  "futures",
- "itertools 0.10.5",
+ "itertools",
  "lazy_static",
  "log",
  "quinn",
@@ -6134,7 +6125,7 @@ dependencies = [
  "ed25519-dalek-bip32",
  "generic-array 0.14.7",
  "hmac 0.12.1",
- "itertools 0.10.5",
+ "itertools",
  "js-sys",
  "lazy_static",
  "libsecp256k1",
@@ -6205,7 +6196,7 @@ dependencies = [
 [[package]]
 name = "solana-signature-verifier"
 version = "0.0.3"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "base64 0.21.7",
  "borsh 0.10.4",
@@ -6229,7 +6220,7 @@ dependencies = [
  "futures-util",
  "histogram",
  "indexmap 2.4.0",
- "itertools 0.10.5",
+ "itertools",
  "libc",
  "log",
  "nix",
@@ -6330,7 +6321,7 @@ dependencies = [
 [[package]]
 name = "solana-trie"
 version = "0.0.3"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "bytemuck",
  "lib 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
@@ -6406,7 +6397,7 @@ dependencies = [
  "byteorder",
  "curve25519-dalek",
  "getrandom 0.1.16",
- "itertools 0.10.5",
+ "itertools",
  "lazy_static",
  "merlin",
  "num-derive 0.4.2",
@@ -6938,7 +6929,7 @@ source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=f
 [[package]]
 name = "stdx"
 version = "0.0.0"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 
 [[package]]
 name = "strsim"
@@ -7464,7 +7455,7 @@ dependencies = [
 [[package]]
 name = "trie-ids"
 version = "0.0.0"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "ascii 1.1.0",
  "base64 0.21.7",
@@ -7735,7 +7726,7 @@ dependencies = [
 [[package]]
 name = "wasm"
 version = "0.0.0"
-source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#0d5fff9286901c0883aed4f39ed87c7462cf7692"
+source = "git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade#297ba9593d071a92e6169ebc27aa1a4c687ef770"
 dependencies = [
  "const_format",
  "derive_more",

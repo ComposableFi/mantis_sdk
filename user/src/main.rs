@@ -76,7 +76,7 @@ async fn handle_ethereum_single_domain_intent(matches: &ArgMatches) -> Result<()
         timeout,
     ).await {
         Ok(receipt) => {
-            println!("Transaction successful, receipt: {:?}", receipt);
+            println!("Transaction successful, receipt: {:?}", receipt.transaction_hash);
         }
         Err(e) => {
             println!("Transaction failed ** Remember you need to approve <TOKEN_IN> to Escrow SC 0x59880a68fafcE2E282866bdb741Cf0b20E95c1B7 **: {:?}", e);
@@ -106,7 +106,7 @@ async fn handle_ethereum_solana_cross_domain_intent(matches: &ArgMatches) -> Res
         timeout,
     ).await {
         Ok(receipt) => {
-            println!("Transaction successful, receipt: {:?}", receipt);
+            println!("Transaction successful, receipt: {:?}", receipt.transaction_hash);
         }
         Err(e) => {
             println!("Transaction failed ** Remember you need to approve <TOKEN_IN> to Escrow SC 0x59880a68fafcE2E282866bdb741Cf0b20E95c1B7 **: {:?}", e);
