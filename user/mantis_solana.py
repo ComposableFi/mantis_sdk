@@ -4,12 +4,12 @@ import time
 
 # List of commands to execute
 commands = [
-    "cargo run -- solana 150000000 rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB 1 3600",
-    "cargo run -- solana 3000000 EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v 1 3600",
-    "cargo run -- solana 7000000 JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL 1 3600",
-    "cargo run -- solana 25000000 HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3 Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB 1 3600",
-    "cargo run -- solana 35000000000 DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263 5z3EqYQo9HiCEs3R84RCDMu2n7anpDMxRhdK8PSWmrRC 1 3600",
-    "cargo run -- solana 3000000 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R A8C3xuqscfmyLrte3VmTqrAq8kgMASius9AFNANwpump 1 3600"
+    "cargo run -- solana 1000000 4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R A8C3xuqscfmyLrte3VmTqrAq8kgMASius9AFNANwpump 1 3600"
+    "cargo run -- solana 300000 DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263 5z3EqYQo9HiCEs3R84RCDMu2n7anpDMxRhdK8PSWmrRC 1 3600",
+    "cargo run -- solana 1 rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB 1 3600",
+    "cargo run -- solana 3 EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v 1 3600",
+    "cargo run -- solana 7 JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL 1 3600",
+    "cargo run -- solana 2 HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3 Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB 1 3600",
 ]
 
 # Function to run the next command in the list
