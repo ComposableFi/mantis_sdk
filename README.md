@@ -23,8 +23,8 @@ Our CLI offers the following pathways:
 
 - 🌞 `solana`: For Solana -> Solana single domain intents
 - 🌙 `ethereum`: For Ethereum -> Ethereum single domain intents
-- 🌠 `solana-ethereum`: For the daring Solana -> Ethereum cross-domain 
-- 🌌 `ethereum-solana`: For the brave Ethereum -> Solana cross-domain
+- 🌠 `solana-ethereum`: For Solana -> Ethereum cross-domain 
+- 🌌 `ethereum-solana`: For Ethereum -> Solana cross-domain
 
 ## 🧭 Command Details
 
