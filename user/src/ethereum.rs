@@ -1,5 +1,6 @@
 use ethers::prelude::*;
 use ethers::providers::{Http, Provider};
+use std::str::FromStr;
 use std::sync::Arc;
 use crate::env;
 
@@ -88,8 +89,19 @@ pub async fn escrow_and_store_intent_ethereum(
         timeout,          // timeout passed as parameter
     );
 
+    let value = if single_domain {
+        U256::zero()
+    } else {
+        let mut value = U256::from_dec_str("12100000000000000").unwrap();
+        if token_in == H160::from_str("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE").unwrap() {
+            value += amount_in;
+        }
+
+        value
+    };
+
     // Call contract function with the constructed intent
-    let contract = contract.escrow_funds(intent).value(U256::zero());
+    let contract = contract.escrow_funds(intent).value(value);
     let pending_tx = contract.send().await?;
 
     let tx_receipt = pending_tx

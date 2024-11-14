@@ -79,7 +79,7 @@ async fn handle_ethereum_single_domain_intent(matches: &ArgMatches) -> Result<()
             println!("Transaction successful, receipt: {:?}", receipt.transaction_hash);
         }
         Err(e) => {
-            println!("Transaction failed ** Remember you need to approve <TOKEN_IN> to Escrow SC 0x393D402F48F0F468030082b5410a58cA2231FD34 **: {:?}", e);
+            println!("Transaction failed ** Remember you need to approve <TOKEN_IN> to Escrow SC 0x64E78873057769a5fd9A2278E6820666ec7e87f9 **: {:?}", e);
         }
     }
 
@@ -109,7 +109,7 @@ async fn handle_ethereum_solana_cross_domain_intent(matches: &ArgMatches) -> Res
             println!("Transaction successful, receipt: {:?}", receipt.transaction_hash);
         }
         Err(e) => {
-            println!("Transaction failed ** Remember you need to approve <TOKEN_IN> to Escrow SC 0x393D402F48F0F468030082b5410a58cA2231FD34 **: {:?}", e);
+            println!("Transaction failed ** Remember you need to approve <TOKEN_IN> to Escrow SC 0x64E78873057769a5fd9A2278E6820666ec7e87f9 **: {:?}", e);
         }
     }
 
