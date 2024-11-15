@@ -58,7 +58,7 @@ pub async fn escrow_and_store_intent_ethereum(
     single_domain: bool,
     timeout: U256,
 ) -> Result<TransactionReceipt, Box<dyn std::error::Error>> {
-    let contract_address = "0x393D402F48F0F468030082b5410a58cA2231FD34"; // Escrow Contract
+    let contract_address = "0x64E78873057769a5fd9A2278E6820666ec7e87f9"; // Escrow Contract
     let private_key = env::var("ETHEREUM_PKEY").expect("ETHEREUM_PKEY must be set");
     let rpc_url = env::var("ETHEREUM_RPC").expect("ETHEREUM_RPC must be set");
 
