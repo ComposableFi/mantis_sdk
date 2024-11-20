@@ -1,8 +1,8 @@
+use crate::env;
 use ethers::prelude::*;
 use ethers::providers::{Http, Provider};
 use std::str::FromStr;
 use std::sync::Arc;
-use crate::env;
 
 abigen!(
     Escrow,
@@ -58,7 +58,7 @@ pub async fn escrow_and_store_intent_ethereum(
     single_domain: bool,
     timeout: U256,
 ) -> Result<TransactionReceipt, Box<dyn std::error::Error>> {
-    let contract_address = "0x64E78873057769a5fd9A2278E6820666ec7e87f9"; // Escrow Contract
+    let contract_address = "0x393D402F48F0F468030082b5410a58cA2231FD34"; // Escrow Contract
     let private_key = env::var("ETHEREUM_PKEY").expect("ETHEREUM_PKEY must be set");
     let rpc_url = env::var("ETHEREUM_RPC").expect("ETHEREUM_RPC must be set");
 
@@ -79,24 +79,27 @@ pub async fn escrow_and_store_intent_ethereum(
     }
 
     let intent = (
-        token_in,         // token_in passed as parameter
-        amount_in,        // amount_in passed as parameter
-        src_user,         // src_user passed as parameter
-        token_out,        // token_out passed as parameter
-        amount_out,       // amount_out passed as parameter
-        dst_user,         // dst_user determined based on single/cross domain
-        "".to_string(),   // winner_solver (currently empty, can be passed as needed)
-        timeout,          // timeout passed as parameter
+        token_in,       // token_in passed as parameter
+        amount_in,      // amount_in passed as parameter
+        src_user,       // src_user passed as parameter
+        token_out,      // token_out passed as parameter
+        amount_out,     // amount_out passed as parameter
+        dst_user,       // dst_user determined based on single/cross domain
+        "".to_string(), // winner_solver (currently empty, can be passed as needed)
+        timeout,        // timeout passed as parameter
     );
 
     let value = if single_domain {
-        U256::zero()
+        let mut value = U256::zero();
+        if token_in == H160::from_str("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE").unwrap() {
+            value = amount_in;
+        }
+        value
     } else {
         let mut value = U256::from_dec_str("12100000000000000").unwrap();
         if token_in == H160::from_str("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE").unwrap() {
             value += amount_in;
         }
-
         value
     };
 

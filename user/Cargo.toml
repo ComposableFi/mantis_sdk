@@ -19,6 +19,7 @@ rand = "0.8.5"
 solana-client = "1.8.3"
 serde = { version = "1.0", features = ["derive"] }
 clap = "4.5.20"
+spl-token = { version = "3.2.0", default-features = false, features = ["no-entrypoint"] }
 spl-associated-token-account = { version = "3.0.2", default-features = false, features = ["no-entrypoint"] }
 bridge-escrow = { git = "https://github.com/ComposableFi/emulated-light-client.git", branch = "upgrade" }
 solana-ibc = { git = "https://github.com/ComposableFi/emulated-light-client.git", branch = "fast-bridge", features = ["cpi"] }

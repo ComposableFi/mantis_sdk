@@ -1,6 +1,6 @@
+use crate::Pubkey;
 use clap::{Arg, ArgMatches, Command};
 use std::str::FromStr;
-use crate::Pubkey;
 
 pub fn parse_cli() -> ArgMatches {
     Command::new("Mantis SDK Intent CLI")
@@ -50,7 +50,7 @@ pub fn common_args() -> Vec<Arg> {
     vec![
         Arg::new("amount_in")
             .required(true)
-            .value_parser(clap::value_parser!(u64)) 
+            .value_parser(clap::value_parser!(u64))
             .help("Amount in tokens"),
         Arg::new("token_in")
             .required(true)
@@ -58,15 +58,15 @@ pub fn common_args() -> Vec<Arg> {
             .help("Token input address"),
         Arg::new("token_out")
             .required(true)
-            .value_parser(clap::value_parser!(String)) 
+            .value_parser(clap::value_parser!(String))
             .help("Token output address"),
         Arg::new("amount_out")
             .required(true)
-            .value_parser(clap::value_parser!(String)) 
+            .value_parser(clap::value_parser!(String))
             .help("Amount out in tokens"),
         Arg::new("timeout")
             .required(true)
-            .value_parser(clap::value_parser!(u64)) 
+            .value_parser(clap::value_parser!(u64))
             .help("Timeout duration in seconds"),
     ]
 }
@@ -90,18 +90,18 @@ fn common_args_ethereum() -> Vec<Arg> {
             .help("Token input address"),
         Arg::new("amount_in")
             .required(true)
-            .value_parser(clap::value_parser!(u64)) 
+            .value_parser(clap::value_parser!(u64))
             .help("Amount in tokens"),
         Arg::new("token_out")
             .required(true)
             .help("Token output address"),
         Arg::new("amount_out")
             .required(true)
-            .value_parser(clap::value_parser!(u64)) 
+            .value_parser(clap::value_parser!(u64))
             .help("Amount out in tokens"),
         Arg::new("timeout")
             .required(true)
-            .value_parser(clap::value_parser!(u64)) 
+            .value_parser(clap::value_parser!(u64))
             .help("Timeout duration in seconds"),
     ]
 }
