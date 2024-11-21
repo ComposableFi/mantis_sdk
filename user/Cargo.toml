@@ -24,6 +24,8 @@ spl-associated-token-account = { version = "3.0.2", default-features = false, fe
 bridge-escrow = { git = "https://github.com/ComposableFi/emulated-light-client.git", branch = "upgrade" }
 solana-ibc = { git = "https://github.com/ComposableFi/emulated-light-client.git", branch = "fast-bridge", features = ["cpi"] }
 lib = { git = "https://github.com/ComposableFi/emulated-light-client.git", branch = "fast-bridge", features = ["solana-program"] }
+jito-searcher-client = { git = "https://github.com/dhruvja/searcher-examples" }
+jito-protos = { git = "https://github.com/dhruvja/searcher-examples" }
 
 [patch.crates-io]
 # aes-gcm-siv 0.10.3 and curve25519-dalek 3.x pin zeroize to <1.4

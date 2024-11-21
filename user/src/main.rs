@@ -3,7 +3,7 @@ mod ethereum;
 mod solana;
 
 use std::env;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use anchor_client::solana_sdk::commitment_config::CommitmentConfig;
 use anchor_client::solana_sdk::pubkey::Pubkey;
@@ -31,18 +31,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Execute the appropriate function based on the subcommand used
     if let Some(solana_matches) = matches.subcommand_matches("solana") {
         let solana_matches_cloned = solana_matches.clone();
-        tokio::task::spawn_blocking(move || {
-            handle_solana_single_domain_intent(&solana_matches_cloned).unwrap();
-        })
-        .await
-        .expect("Failed to execute blocking code on solana");
+        handle_solana_single_domain_intent(&solana_matches_cloned)
+            .await
+            .expect("Failed to execute blocking code on solana");
     } else if let Some(solana_ethereum_matches) = matches.subcommand_matches("solana-ethereum") {
         let solana_ethereum_matches_cloned = solana_ethereum_matches.clone();
-        tokio::task::spawn_blocking(move || {
-            handle_solana_ethereum_cross_domain_intent(&solana_ethereum_matches_cloned).unwrap();
-        })
-        .await
-        .expect("Failed to execute blocking code on solana-ethereum");
+        handle_solana_ethereum_cross_domain_intent(&solana_ethereum_matches_cloned)
+            .await
+            .expect("Failed to execute blocking code on solana-ethereum");
     } else if let Some(ethereum_matches) = matches.subcommand_matches("ethereum") {
         let ethereum_matches_cloned = ethereum_matches.clone();
         handle_ethereum_single_domain_intent(&ethereum_matches_cloned)
@@ -121,14 +117,14 @@ async fn handle_ethereum_solana_cross_domain_intent(matches: &ArgMatches) -> Res
 }
 
 /// Handle the Solana -> Solana intent.
-fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> {
+async fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> {
     let private_key_bytes =
         bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
             .into_vec()
             .expect("Failed to decode Base58 private key");
 
     let wallet =
-        Rc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
+        Arc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
 
     let auctioneer_state = Pubkey::find_program_address(&[b"auctioneer"], &bridge_escrow::ID).0;
 
@@ -156,7 +152,9 @@ fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> {
         amount_out,
         timeout_duration,
         single_domain,
-    ) {
+    )
+    .await
+    {
         Ok(sig) => {
             println!("Transaction successful, signature: {}", sig);
             sig
@@ -171,14 +169,14 @@ fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> {
 }
 
 /// Handle the Solana -> Ethereum cross-domain intent.
-fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Result<()> {
+async fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Result<()> {
     let private_key_bytes =
         bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
             .into_vec()
             .expect("Failed to decode Base58 private key");
 
     let wallet =
-        Rc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
+        Arc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
 
     let auctioneer_state = Pubkey::find_program_address(&[b"auctioneer"], &bridge_escrow::ID).0;
 
@@ -206,7 +204,9 @@ fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Result<()
         amount_out,
         timeout_duration,
         single_domain,
-    ) {
+    )
+    .await
+    {
         Ok(sig) => {
             println!("Transaction successful, signature: {}", sig);
             sig
