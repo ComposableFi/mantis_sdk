@@ -15,13 +15,15 @@ use ethers::types::Address;
 use ethers::types::U256;
 use rand::{distributions::Alphanumeric, Rng};
 use solana_sdk::bs58;
-use solana_sdk::signature::Signer;
+use solana_sdk::signature::{Signature, Signer};
 use std::str::FromStr;
 
 use crate::cli::parse_cli;
 use crate::cli::parse_common_args;
 use crate::ethereum::escrow_and_store_intent_ethereum;
 use crate::solana::{escrow_and_store_intent_cross_chain_solana, escrow_and_store_intent_solana};
+
+const AUCTIONER_URL: &str = "http://34.78.217.187:8080";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -126,6 +128,8 @@ fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> {
         bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
             .into_vec()
             .expect("Failed to decode Base58 private key");
+    let auctioner_url =
+        env::var("AUCTIONER_URL").unwrap_or(AUCTIONER_URL.to_string());
 
     let wallet =
         Rc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
@@ -159,6 +163,7 @@ fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> {
     ) {
         Ok(sig) => {
             println!("Transaction successful, signature: {}", sig);
+            send_signature_to_auctioner(&auctioner_url, sig)?;
             sig
         }
         Err(e) => {
@@ -176,6 +181,8 @@ fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Result<()
         bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
             .into_vec()
             .expect("Failed to decode Base58 private key");
+    let auctioner_url =
+        env::var("AUCTIONER_URL").unwrap_or(AUCTIONER_URL.to_string());
 
     let wallet =
         Rc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
@@ -209,6 +216,7 @@ fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Result<()
     ) {
         Ok(sig) => {
             println!("Transaction successful, signature: {}", sig);
+            send_signature_to_auctioner(&auctioner_url, sig)?;
             sig
         }
         Err(e) => {
@@ -217,6 +225,15 @@ fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Result<()
         }
     };
 
+    Ok(())
+}
+
+fn send_signature_to_auctioner(auctioner_url: &str, sig: Signature) -> Result<()> {
+    let resp = reqwest::blocking::Client::new()
+        .post(&format!("{auctioner_url}/solana_tx_hash"))
+        .body(sig.to_string())
+        .send()?;
+    println!("Sent signature to the auctioner ({auctioner_url}). Response: {}", resp.text()?);
     Ok(())
 }
 
