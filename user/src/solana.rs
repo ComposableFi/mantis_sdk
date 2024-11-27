@@ -6,7 +6,7 @@ use anchor_client::Client;
 use anchor_lang::system_program;
 use anchor_spl::associated_token;
 use anchor_spl::associated_token::get_associated_token_address;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use jito_protos::searcher::SubscribeBundleResultsRequest;
 use solana_sdk::pubkey;
 use solana_sdk::signature::Signature;
@@ -17,8 +17,12 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
+use clap::builder::OsStr;
+use solana_client::rpc_config::RpcSendTransactionConfig;
 use tokio::time::sleep;
 use tokio::time::Duration;
+use strum::EnumString;
+use strum_macros::{Display, IntoStaticStr};
 use {
     solana_client::nonblocking::rpc_client::RpcClient,
     solana_sdk::{hash::Hash, instruction::Instruction, transaction::Transaction},
@@ -29,6 +33,21 @@ pub const JITO_ADDRESS: Pubkey =
 pub const JITO_TIP_AMOUNT: u64 = 10000;
 pub const JITO_BLOCK_ENGINE_URL: &str = "https://mainnet.block-engine.jito.wtf";
 pub const RETRIES: u8 = 5;
+
+#[derive(Debug, Clone, Copy, Default, EnumString, Display, IntoStaticStr)]
+#[strum(serialize_all = "snake_case")]
+pub enum TxSendMethod {
+    #[default]
+    JITO,
+    RPC,
+}
+
+impl From<&TxSendMethod> for OsStr {
+    fn from(value: &TxSendMethod) -> Self {
+        let string: &'static str = value.into();
+        OsStr::from(string)
+    }
+}
 
 pub async fn escrow_and_store_intent_solana(
     src_user: &Arc<Keypair>,
@@ -42,6 +61,7 @@ pub async fn escrow_and_store_intent_solana(
     amount_out: String,
     timeout_duration: u64,
     single_domain: bool,
+    tx_send_method: TxSendMethod,
 ) -> Result<Signature, String> {
     let program = match client.program(bridge_escrow::ID) {
         Ok(prog) => prog,
@@ -50,7 +70,7 @@ pub async fn escrow_and_store_intent_solana(
 
     if token_in == Pubkey::from_str("11111111111111111111111111111111").unwrap() {
         token_in = Pubkey::from_str("So11111111111111111111111111111111111111112").unwrap();
-        ensure_wsol_balance_blocking(src_user, amount_in)
+        ensure_wsol_balance_blocking(src_user, amount_in, tx_send_method)
             .await
             .unwrap();
     }
@@ -100,7 +120,7 @@ pub async fn escrow_and_store_intent_solana(
             .payer(src_user.clone())
             .instructions()
             .unwrap();
-        let sig = submit_through_jito(&program.async_rpc(), src_user.clone(), instructions).await;
+        let sig = submit(&program.async_rpc(), src_user.clone(), instructions, tx_send_method).await;
         // .signer(&*src_user)
         // .send_with_spinner_and_config(RpcSendTransactionConfig {
         //     skip_preflight: true,
@@ -135,6 +155,7 @@ pub async fn escrow_and_store_intent_cross_chain_solana(
     amount_out: String,
     timeout_duration: u64,
     single_domain: bool,
+    tx_send_method: TxSendMethod,
 ) -> Result<Signature, String> {
     let program = match client.program(bridge_escrow::ID) {
         Ok(prog) => prog,
@@ -143,7 +164,7 @@ pub async fn escrow_and_store_intent_cross_chain_solana(
 
     if token_in == Pubkey::from_str("11111111111111111111111111111111").unwrap() {
         token_in = Pubkey::from_str("So11111111111111111111111111111111111111112").unwrap();
-        ensure_wsol_balance_blocking(src_user, amount_in)
+        ensure_wsol_balance_blocking(src_user, amount_in, tx_send_method)
             .await
             .unwrap();
     }
@@ -194,7 +215,7 @@ pub async fn escrow_and_store_intent_cross_chain_solana(
             .instructions()
             .unwrap();
 
-        let sig = submit_through_jito(&program.async_rpc(), src_user.clone(), instructions).await;
+        let sig = submit(&program.async_rpc(), src_user.clone(), instructions, tx_send_method).await;
 
         match sig {
             Ok(signature) => break Ok(signature), // Transaction succeeded, exit loop
@@ -215,6 +236,7 @@ pub async fn escrow_and_store_intent_cross_chain_solana(
 pub async fn ensure_wsol_balance_blocking(
     fee_payer: &Arc<Keypair>,
     amount_in: u64,
+    tx_send_method: TxSendMethod,
 ) -> Result<(), String> {
     let rpc_url = env::var("SOLANA_RPC").expect("SOLANA_RPC must be set");
     let rpc_client = RpcClient::new_with_commitment(rpc_url.clone(), CommitmentConfig::confirmed());
@@ -261,7 +283,7 @@ pub async fn ensure_wsol_balance_blocking(
     // Build and send the transaction
     let instructions = vec![transfer_sol_to_wsol_ix, sync_wsol_balance_ix.unwrap()];
 
-    submit_through_jito(&rpc_client, fee_payer.clone(), instructions).await?;
+    submit(&rpc_client, fee_payer.clone(), instructions, tx_send_method).await?;
     Ok(())
 
     // let recent_blockhash = rpc_client
@@ -388,12 +410,62 @@ pub async fn _create_token_account(
     }
 }
 
-pub async fn submit_through_jito(
+pub async fn submit(
     rpc_client: &RpcClient,
     fee_payer: Arc<Keypair>,
     instructions: Vec<Instruction>,
+    tx_send_method: TxSendMethod,
 ) -> Result<Signature, String> {
-    let ix = anchor_lang::solana_program::system_instruction::transfer(
+    match tx_send_method {
+        TxSendMethod::JITO => submit_jito(rpc_client, fee_payer, instructions).await,
+        TxSendMethod::RPC => submit_default(rpc_client, fee_payer, instructions).await,
+    }.map_err(|e| e.to_string())
+}
+
+pub async fn submit_default(
+    rpc_client: &RpcClient,
+    fee_payer: Arc<Keypair>,
+    instructions: Vec<Instruction>,
+) -> Result<Signature> {
+    let recent_blockhash = rpc_client
+        .get_latest_blockhash()
+        .await
+        .map_err(|e| anyhow!("Failed to fetch blockhash: {}", e))?;
+    let mut transaction = Transaction::new_with_payer(&instructions, Some(&fee_payer.pubkey()));
+    transaction.sign(&[&*fee_payer], recent_blockhash);
+
+    let mut current_try = 0;
+    loop {
+        current_try += 1;
+        let sig = rpc_client.send_and_confirm_transaction_with_spinner_and_config(&transaction, rpc_client.commitment(), RpcSendTransactionConfig {
+            skip_preflight: false,
+            ..Default::default()
+        }).await;
+        match sig {
+            Ok(sig) => return Ok(sig), // Transaction succeeded, exit loop
+            Err(err) if err.to_string().contains("unable to confirm transaction") => {
+                eprintln!("Transaction failed: {}. Retrying...", err);
+                if current_try == RETRIES {
+                    return Err(anyhow!("Failed to send transaction: {}", err));
+                }
+                std::thread::sleep(Duration::from_secs(1));
+            }
+            Err(err) => {
+                return Err(anyhow!(
+                    "Transaction failed due to a non-retryable error: {}",
+                    err
+                ))
+            } // Break on other errors
+        }
+    }
+}
+
+pub async fn submit_jito(
+    rpc_client: &RpcClient,
+    fee_payer: Arc<Keypair>,
+    instructions: Vec<Instruction>,
+) -> Result<Signature> {
+    let ix = system_instruction::transfer(
         &fee_payer.pubkey(),
         &JITO_ADDRESS,
         JITO_TIP_AMOUNT,
@@ -410,17 +482,16 @@ pub async fn submit_through_jito(
         let mut cloned_tx = tx.clone();
         let mut client =
             jito_searcher_client::get_searcher_client(&JITO_BLOCK_ENGINE_URL, &fee_payer)
-                .await
-                .expect("connects to searcher client");
+                .await?;
         let mut bundle_results_subscription = client
             .subscribe_bundle_results(SubscribeBundleResultsRequest {})
-            .await
-            .expect("subscribe to bundle results")
+            .await?
             .into_inner();
 
-        let blockhash = rpc_client.get_latest_blockhash().await.unwrap();
+        let blockhash = rpc_client.get_latest_blockhash().await?;
         cloned_tx.sign(&[&*fee_payer], blockhash);
 
+        println!("send");
         let signatures = jito_searcher_client::send_bundle_with_confirmation(
             &[cloned_tx.into()],
             &rpc_client,
@@ -432,10 +503,11 @@ pub async fn submit_through_jito(
             println!("This is error {:?}", e);
             Err(e)
         });
+        println!("recv");
 
         if let Ok(sigs) = signatures {
-            signature = *sigs.first().unwrap();
-            break;
+            signature = *sigs.first().ok_or_else(|| anyhow!("No signature found"))?;
+            return Ok(signature);
         } else {
             current_try += 1;
             continue;
@@ -443,16 +515,8 @@ pub async fn submit_through_jito(
     }
     if current_try == RETRIES {
         println!("Failed to send transaction with the tries, Sending it through RPC Now");
-        let mut current_try = 0;
-        while current_try < RETRIES {
-            let sig = rpc_client.send_and_confirm_transaction(&tx).await;
-            if let Ok(sig) = sig {
-                return Ok(sig);
-            }
-            current_try += 1;
-        }
-        return Err("Failed to send transaction through RPC".to_string());
+        submit_default(rpc_client, fee_payer, instructions).await
     } else {
-        return Ok(signature);
+        Ok(signature)
     }
 }

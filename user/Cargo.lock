@@ -1073,7 +1073,7 @@ dependencies = [
  "spl-associated-token-account 2.3.0",
  "spl-token 4.0.0",
  "stdx 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
- "strum",
+ "strum 0.25.0",
  "tendermint",
  "tendermint-light-client-verifier",
  "trie-ids 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
@@ -2731,7 +2731,7 @@ dependencies = [
  "proto-utils 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=fast-bridge)",
  "sealable-trie 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=fast-bridge)",
  "stdx 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=fast-bridge)",
- "strum",
+ "strum 0.25.0",
  "trie-ids 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=fast-bridge)",
 ]
 
@@ -2753,7 +2753,7 @@ dependencies = [
  "proto-utils 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
  "sealable-trie 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
  "stdx 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
- "strum",
+ "strum 0.25.0",
  "trie-ids 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
 ]
 
@@ -5381,7 +5381,7 @@ dependencies = [
  "memory 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=fast-bridge)",
  "sha2 0.10.8",
  "stdx 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=fast-bridge)",
- "strum",
+ "strum 0.25.0",
 ]
 
 [[package]]
@@ -5398,7 +5398,7 @@ dependencies = [
  "memory 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
  "sha2 0.10.8",
  "stdx 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
- "strum",
+ "strum 0.25.0",
 ]
 
 [[package]]
@@ -5897,7 +5897,7 @@ dependencies = [
  "spl-associated-token-account 2.3.0",
  "spl-token 4.0.0",
  "stdx 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=fast-bridge)",
- "strum",
+ "strum 0.25.0",
  "tendermint",
  "tendermint-light-client-verifier",
  "trie-ids 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=fast-bridge)",
@@ -5935,7 +5935,7 @@ dependencies = [
  "spl-associated-token-account 2.3.0",
  "spl-token 4.0.0",
  "stdx 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
- "strum",
+ "strum 0.25.0",
  "tendermint",
  "tendermint-light-client-verifier",
  "trie-ids 0.0.0 (git+https://github.com/ComposableFi/emulated-light-client.git?branch=upgrade)",
@@ -7121,7 +7121,16 @@ version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "290d54ea6f91c969195bdbcd7442c8c2a2ba87da8bf60a7ee86a235d4bc1e125"
 dependencies = [
- "strum_macros",
+ "strum_macros 0.25.3",
+]
+
+[[package]]
+name = "strum"
+version = "0.26.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fec0f0aef304996cf250b31b5a10dee7980c85da9d759361292b8bca5a18f06"
+dependencies = [
+ "strum_macros 0.26.4",
 ]
 
 [[package]]
@@ -7131,6 +7140,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23dc1fa9ac9c169a78ba62f0b841814b7abae11bdd047b9c58f893439e309ea0"
 dependencies = [
  "heck 0.4.1",
+ "proc-macro2",
+ "quote",
+ "rustversion",
+ "syn 2.0.76",
+]
+
+[[package]]
+name = "strum_macros"
+version = "0.26.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c6bee85a5a24955dc440386795aa378cd9cf82acd5f764469152d2270e581be"
+dependencies = [
+ "heck 0.5.0",
  "proc-macro2",
  "quote",
  "rustversion",
@@ -7696,7 +7718,7 @@ dependencies = [
  "ibc-core-client-types",
  "ibc-core-connection-types",
  "ibc-core-host-types",
- "strum",
+ "strum 0.25.0",
 ]
 
 [[package]]
@@ -7713,7 +7735,7 @@ dependencies = [
  "ibc-core-client-types",
  "ibc-core-connection-types",
  "ibc-core-host-types",
- "strum",
+ "strum 0.25.0",
 ]
 
 [[package]]
@@ -7877,6 +7899,8 @@ dependencies = [
  "solana-sdk",
  "spl-associated-token-account 3.0.4",
  "spl-token 3.5.0",
+ "strum 0.26.3",
+ "strum_macros 0.26.4",
  "tokio",
 ]
 

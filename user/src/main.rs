@@ -21,7 +21,7 @@ use std::str::FromStr;
 use crate::cli::parse_cli;
 use crate::cli::parse_common_args;
 use crate::ethereum::escrow_and_store_intent_ethereum;
-use crate::solana::{escrow_and_store_intent_cross_chain_solana, escrow_and_store_intent_solana};
+use crate::solana::{escrow_and_store_intent_cross_chain_solana, escrow_and_store_intent_solana, TxSendMethod};
 
 const AUCTIONER_URL: &str = "http://34.78.217.187:8080";
 
@@ -126,10 +126,13 @@ async fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> 
             .expect("Failed to decode Base58 private key");
     let auctioner_url =
         env::var("AUCTIONER_URL").unwrap_or(AUCTIONER_URL.to_string());
+    let tx_send_method: TxSendMethod = *matches
+        .get_one::<TxSendMethod>("tx_send_method")
+        .expect("tx-send-method is required");
 
     let wallet =
         Arc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
-
+    println!("Sender: {:?}", wallet.pubkey());
     let auctioneer_state = Pubkey::find_program_address(&[b"auctioneer"], &bridge_escrow::ID).0;
 
     let client = Client::new_with_options(
@@ -156,12 +159,13 @@ async fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> 
         amount_out,
         timeout_duration,
         single_domain,
+        tx_send_method,
     )
     .await
     {
         Ok(sig) => {
             println!("Transaction successful, signature: {}", sig);
-            send_signature_to_auctioner(&auctioner_url, sig)?;
+            send_signature_to_auctioner(&auctioner_url, sig).await?;
             sig
         }
         Err(e) => {
@@ -181,6 +185,11 @@ async fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Res
             .expect("Failed to decode Base58 private key");
     let auctioner_url =
         env::var("AUCTIONER_URL").unwrap_or(AUCTIONER_URL.to_string());
+    let tx_send_method: TxSendMethod = matches
+        .get_one::<TxSendMethod>("tx_send_method")
+        .map(|x| *x)
+        .unwrap_or_default();
+    dbg!(tx_send_method);
 
     let wallet =
         Arc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
@@ -211,12 +220,13 @@ async fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Res
         amount_out,
         timeout_duration,
         single_domain,
+        tx_send_method,
     )
     .await
     {
         Ok(sig) => {
             println!("Transaction successful, signature: {}", sig);
-            send_signature_to_auctioner(&auctioner_url, sig)?;
+            send_signature_to_auctioner(&auctioner_url, sig).await?;
             sig
         }
         Err(e) => {
@@ -228,12 +238,13 @@ async fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Res
     Ok(())
 }
 
-fn send_signature_to_auctioner(auctioner_url: &str, sig: Signature) -> Result<()> {
-    let resp = reqwest::blocking::Client::new()
+async fn send_signature_to_auctioner(auctioner_url: &str, sig: Signature) -> Result<()> {
+    let resp = reqwest::Client::new()
         .post(&format!("{auctioner_url}/solana_tx_hash"))
         .body(sig.to_string())
-        .send()?;
-    println!("Sent signature to the auctioner ({auctioner_url}). Response: {}", resp.text()?);
+        .send()
+        .await?;
+    println!("Sent signature to the auctioner ({auctioner_url}). Response: {}", resp.text().await?);
     Ok(())
 }
 
