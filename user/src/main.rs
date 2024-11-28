@@ -3,7 +3,7 @@ mod ethereum;
 mod solana;
 
 use std::env;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use anchor_client::solana_sdk::commitment_config::CommitmentConfig;
 use anchor_client::solana_sdk::pubkey::Pubkey;
@@ -21,7 +21,7 @@ use std::str::FromStr;
 use crate::cli::parse_cli;
 use crate::cli::parse_common_args;
 use crate::ethereum::escrow_and_store_intent_ethereum;
-use crate::solana::{escrow_and_store_intent_cross_chain_solana, escrow_and_store_intent_solana};
+use crate::solana::{escrow_and_store_intent_cross_chain_solana, escrow_and_store_intent_solana, TxSendMethod};
 
 const AUCTIONER_URL: &str = "http://34.78.217.187:8080";
 
@@ -33,18 +33,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Execute the appropriate function based on the subcommand used
     if let Some(solana_matches) = matches.subcommand_matches("solana") {
         let solana_matches_cloned = solana_matches.clone();
-        tokio::task::spawn_blocking(move || {
-            handle_solana_single_domain_intent(&solana_matches_cloned).unwrap();
-        })
-        .await
-        .expect("Failed to execute blocking code on solana");
+        handle_solana_single_domain_intent(&solana_matches_cloned)
+            .await
+            .expect("Failed to execute blocking code on solana");
     } else if let Some(solana_ethereum_matches) = matches.subcommand_matches("solana-ethereum") {
         let solana_ethereum_matches_cloned = solana_ethereum_matches.clone();
-        tokio::task::spawn_blocking(move || {
-            handle_solana_ethereum_cross_domain_intent(&solana_ethereum_matches_cloned).unwrap();
-        })
-        .await
-        .expect("Failed to execute blocking code on solana-ethereum");
+        handle_solana_ethereum_cross_domain_intent(&solana_ethereum_matches_cloned)
+            .await
+            .expect("Failed to execute blocking code on solana-ethereum");
     } else if let Some(ethereum_matches) = matches.subcommand_matches("ethereum") {
         let ethereum_matches_cloned = ethereum_matches.clone();
         handle_ethereum_single_domain_intent(&ethereum_matches_cloned)
@@ -123,17 +119,20 @@ async fn handle_ethereum_solana_cross_domain_intent(matches: &ArgMatches) -> Res
 }
 
 /// Handle the Solana -> Solana intent.
-fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> {
+async fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> {
     let private_key_bytes =
         bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
             .into_vec()
             .expect("Failed to decode Base58 private key");
     let auctioner_url =
         env::var("AUCTIONER_URL").unwrap_or(AUCTIONER_URL.to_string());
+    let tx_send_method: TxSendMethod = *matches
+        .get_one::<TxSendMethod>("tx_send_method")
+        .expect("tx-send-method is required");
 
     let wallet =
-        Rc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
-
+        Arc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
+    println!("Sender: {:?}", wallet.pubkey());
     let auctioneer_state = Pubkey::find_program_address(&[b"auctioneer"], &bridge_escrow::ID).0;
 
     let client = Client::new_with_options(
@@ -160,10 +159,13 @@ fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> {
         amount_out,
         timeout_duration,
         single_domain,
-    ) {
+        tx_send_method,
+    )
+    .await
+    {
         Ok(sig) => {
             println!("Transaction successful, signature: {}", sig);
-            send_signature_to_auctioner(&auctioner_url, sig)?;
+            send_signature_to_auctioner(&auctioner_url, sig).await?;
             sig
         }
         Err(e) => {
@@ -176,16 +178,21 @@ fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> {
 }
 
 /// Handle the Solana -> Ethereum cross-domain intent.
-fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Result<()> {
+async fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Result<()> {
     let private_key_bytes =
         bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
             .into_vec()
             .expect("Failed to decode Base58 private key");
     let auctioner_url =
         env::var("AUCTIONER_URL").unwrap_or(AUCTIONER_URL.to_string());
+    let tx_send_method: TxSendMethod = matches
+        .get_one::<TxSendMethod>("tx_send_method")
+        .map(|x| *x)
+        .unwrap_or_default();
+    dbg!(tx_send_method);
 
     let wallet =
-        Rc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
+        Arc::new(Keypair::from_bytes(&private_key_bytes).expect("Failed to create keypair"));
 
     let auctioneer_state = Pubkey::find_program_address(&[b"auctioneer"], &bridge_escrow::ID).0;
 
@@ -213,10 +220,13 @@ fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Result<()
         amount_out,
         timeout_duration,
         single_domain,
-    ) {
+        tx_send_method,
+    )
+    .await
+    {
         Ok(sig) => {
             println!("Transaction successful, signature: {}", sig);
-            send_signature_to_auctioner(&auctioner_url, sig)?;
+            send_signature_to_auctioner(&auctioner_url, sig).await?;
             sig
         }
         Err(e) => {
@@ -228,12 +238,13 @@ fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Result<()
     Ok(())
 }
 
-fn send_signature_to_auctioner(auctioner_url: &str, sig: Signature) -> Result<()> {
-    let resp = reqwest::blocking::Client::new()
+async fn send_signature_to_auctioner(auctioner_url: &str, sig: Signature) -> Result<()> {
+    let resp = reqwest::Client::new()
         .post(&format!("{auctioner_url}/solana_tx_hash"))
         .body(sig.to_string())
-        .send()?;
-    println!("Sent signature to the auctioner ({auctioner_url}). Response: {}", resp.text()?);
+        .send()
+        .await?;
+    println!("Sent signature to the auctioner ({auctioner_url}). Response: {}", resp.text().await?);
     Ok(())
 }
 

@@ -1,6 +1,7 @@
 use crate::Pubkey;
 use clap::{Arg, ArgMatches, Command};
 use std::str::FromStr;
+use crate::solana::TxSendMethod;
 
 pub fn parse_cli() -> ArgMatches {
     Command::new("Mantis SDK Intent CLI")
@@ -68,6 +69,12 @@ pub fn common_args() -> Vec<Arg> {
             .required(true)
             .value_parser(clap::value_parser!(u64))
             .help("Timeout duration in seconds"),
+        Arg::new("tx_send_method")
+            .required(false)
+            .long("tx-send-method")
+            .default_value(&TxSendMethod::JITO)
+            .value_parser(clap::value_parser!(TxSendMethod))
+            .help("Transaction send method (RPC/JITO)"),
     ]
 }
 
