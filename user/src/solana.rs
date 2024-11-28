@@ -121,11 +121,6 @@ pub async fn escrow_and_store_intent_solana(
             .instructions()
             .unwrap();
         let sig = submit(&program.async_rpc(), src_user.clone(), instructions, tx_send_method).await;
-        // .signer(&*src_user)
-        // .send_with_spinner_and_config(RpcSendTransactionConfig {
-        //     skip_preflight: true,
-        //     ..Default::default()
-        // });
 
         match sig {
             Ok(signature) => break Ok(signature), // Transaction succeeded, exit loop
@@ -285,30 +280,6 @@ pub async fn ensure_wsol_balance_blocking(
 
     submit(&rpc_client, fee_payer.clone(), instructions, tx_send_method).await?;
     Ok(())
-
-    // let recent_blockhash = rpc_client
-    //     .get_latest_blockhash()
-    //     .map_err(|e| format!("Failed to fetch blockhash: {}", e))?;
-    // let mut transaction = Transaction::new_with_payer(&instructions, Some(&fee_payer.pubkey()));
-    // transaction.sign(&[fee_payer], recent_blockhash);
-
-    // loop {
-    //     let sig = rpc_client.send_and_confirm_transaction_with_spinner(&transaction);
-
-    //     match sig {
-    //         Ok(_) => return Ok(()), // Transaction succeeded, exit loop
-    //         Err(err) if err.to_string().contains("unable to confirm transaction") => {
-    //             eprintln!("Transaction failed: {}. Retrying...", err);
-    //             std::thread::sleep(std::time::Duration::from_secs(1));
-    //         }
-    //         Err(err) => {
-    //             return Err(format!(
-    //                 "Transaction failed due to a non-retryable error: {}",
-    //                 err
-    //             ))
-    //         } // Break on other errors
-    //     }
-    // }
 }
 
 // fn _user_cancel_intent_solana(
@@ -491,7 +462,6 @@ pub async fn submit_jito(
         let blockhash = rpc_client.get_latest_blockhash().await?;
         cloned_tx.sign(&[&*fee_payer], blockhash);
 
-        println!("send");
         let signatures = jito_searcher_client::send_bundle_with_confirmation(
             &[cloned_tx.into()],
             &rpc_client,
@@ -503,7 +473,6 @@ pub async fn submit_jito(
             println!("This is error {:?}", e);
             Err(e)
         });
-        println!("recv");
 
         if let Ok(sigs) = signatures {
             signature = *sigs.first().ok_or_else(|| anyhow!("No signature found"))?;
