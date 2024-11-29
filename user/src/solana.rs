@@ -19,6 +19,7 @@ use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 use clap::builder::OsStr;
 use solana_client::rpc_config::RpcSendTransactionConfig;
+use solana_sdk::commitment_config::CommitmentLevel;
 use tokio::time::sleep;
 use tokio::time::Duration;
 use strum::EnumString;
@@ -398,22 +399,22 @@ pub async fn submit_default(
     fee_payer: Arc<Keypair>,
     instructions: Vec<Instruction>,
 ) -> Result<Signature> {
-    let recent_blockhash = rpc_client
-        .get_latest_blockhash()
-        .await
-        .map_err(|e| anyhow!("Failed to fetch blockhash: {}", e))?;
-    let mut transaction = Transaction::new_with_payer(&instructions, Some(&fee_payer.pubkey()));
-    transaction.sign(&[&*fee_payer], recent_blockhash);
 
     let mut current_try = 0;
     loop {
         current_try += 1;
-        let commitment_config = CommitmentConfig::processed();
-        let sig = rpc_client.send_and_confirm_transaction_with_spinner_and_config(&transaction, commitment_config, RpcSendTransactionConfig {
-            skip_preflight: false,
-            preflight_commitment: Some(commitment_config.commitment),
+
+        let recent_blockhash = rpc_client
+            .get_latest_blockhash()
+            .await
+            .map_err(|e| anyhow!("Failed to fetch blockhash: {}", e))?;
+        let transaction = Transaction::new_signed_with_payer(&instructions, Some(&fee_payer.pubkey()), &[&*fee_payer], recent_blockhash);
+
+        let sig = rpc_client.send_and_confirm_transaction_with_spinner_and_config(&transaction, rpc_client.commitment(), RpcSendTransactionConfig {
+            skip_preflight: true,
             ..Default::default()
         }).await;
+
         match sig {
             Ok(sig) => return Ok(sig), // Transaction succeeded, exit loop
             Err(err) if err.to_string().contains("unable to confirm transaction") => {
