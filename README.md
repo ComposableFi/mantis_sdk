@@ -31,8 +31,9 @@ Our CLI offers the following pathways:
 ### 🌞 Solana Single Domain
 
 ```bash
-cargo run -- solana <amount_in> <token_in> <token_out> <amount_out> <timeout>
+cargo run -- solana <amount_in> <token_in> <token_out> <amount_out> <timeout> [--tx-send-method rpc]
 ```
+Note: Use the --tx-send-method rpc flag to bypass the default Jito RPC. For Jito RPC, you must be whitelisted.
 
 ### 🌙 Ethereum Single Domain
 
@@ -52,8 +53,10 @@ This only needs to be done once to grant the necessary permissions.
 ### 🌠 Solana to Ethereum
 
 ```bash
-cargo run -- solana-ethereum <amount_in> <token_in> <token_out> <amount_out> <timeout> <dst_user>
+cargo run -- solana-ethereum <amount_in> <token_in> <token_out> <amount_out> <timeout> <dst_user> [--tx-send-method rpc]
+
 ```
+Note: Use the --tx-send-method rpc flag to bypass the default Jito RPC. For Jito RPC, you must be whitelisted.
 
 ### 🌌 Ethereum to Solana
 
@@ -84,7 +87,7 @@ SOLANA_KEYPAIR=""    # Your Solana wallet private key (e.g., Phantom wallet priv
 
 1. 🌞 Solana Single Domain
    ```bash
-   cargo run -- solana 100 So11111111111111111111111111111111111111112 EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v 95 3600
+   cargo run -- solana 100 So11111111111111111111111111111111111111112 EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v 95 3600 --tx-send-method rpc
    ```
 
 2. 🌙 Ethereum Single Domain
@@ -94,7 +97,7 @@ SOLANA_KEYPAIR=""    # Your Solana wallet private key (e.g., Phantom wallet priv
 
 3. 🌠 Solana to Ethereum
    ```bash
-   cargo run -- solana-ethereum 50 So11111111111111111111111111111111111111112 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 49 3600 0x742d35Cc6634C0532925a3b844Bc454e4438f44e
+   cargo run -- solana-ethereum 50 So11111111111111111111111111111111111111112 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 49 3600 0x742d35Cc6634C0532925a3b844Bc454e4438f44e --tx-send-method rpc
    ```
 
 4. 🌌 Ethereum to Solana
