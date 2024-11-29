@@ -19,7 +19,6 @@ use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 use clap::builder::OsStr;
 use solana_client::rpc_config::RpcSendTransactionConfig;
-use solana_sdk::commitment_config::CommitmentLevel;
 use tokio::time::sleep;
 use tokio::time::Duration;
 use strum::EnumString;
