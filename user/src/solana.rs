@@ -105,10 +105,10 @@ pub async fn escrow_and_store_intent_solana(
             .request()
             .accounts(bridge_escrow::accounts::EscrowAndStoreIntent {
                 user: src_user.pubkey(),
-                user_token_account: user_token_in_addr,
+                user_token_account: Some(user_token_in_addr),
                 auctioneer_state,
-                token_mint: token_in,
-                escrow_token_account: token_in_escrow_addr,
+                token_mint: Some(token_in),
+                escrow_token_account: Some(token_in_escrow_addr),
                 intent: intent_state,
                 token_program: anchor_spl::token::ID,
                 associated_token_program: associated_token::ID,
@@ -194,10 +194,10 @@ pub async fn escrow_and_store_intent_cross_chain_solana(
             .request()
             .accounts(bridge_escrow::accounts::EscrowAndStoreIntent {
                 user: src_user.pubkey(),
-                user_token_account: user_token_in_addr,
+                user_token_account: Some(user_token_in_addr),
                 auctioneer_state,
-                token_mint: token_in,
-                escrow_token_account: token_in_escrow_addr,
+                token_mint: Some(token_in),
+                escrow_token_account: Some(token_in_escrow_addr),
                 intent: intent_state,
                 token_program: anchor_spl::token::ID,
                 associated_token_program: associated_token::ID,
