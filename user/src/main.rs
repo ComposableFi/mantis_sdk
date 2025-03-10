@@ -14,6 +14,7 @@ use clap::ArgMatches;
 use ethers::types::Address;
 use ethers::types::U256;
 use rand::{distributions::Alphanumeric, Rng};
+use serde::{Deserialize, Serialize};
 use solana_sdk::bs58;
 use solana_sdk::signature::{Signature, Signer};
 use std::str::FromStr;
@@ -21,9 +22,12 @@ use std::str::FromStr;
 use crate::cli::parse_cli;
 use crate::cli::parse_common_args;
 use crate::ethereum::escrow_and_store_intent_ethereum;
-use crate::solana::{escrow_and_store_intent_cross_chain_solana, escrow_and_store_intent_solana, TxSendMethod};
+use crate::solana::{
+    escrow_and_store_intent_cross_chain_solana, escrow_and_store_intent_solana, TxSendMethod,
+};
 
-const AUCTIONER_URL: &str = "http://34.78.217.187:8080";
+const AUCTIONEER_URL: &str =
+    "https://auctioneer-2.composable-shared-artifacts.composablenodes.tech/api/v1-beta";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -124,8 +128,7 @@ async fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> 
         bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
             .into_vec()
             .expect("Failed to decode Base58 private key");
-    let auctioner_url =
-        env::var("AUCTIONER_URL").unwrap_or(AUCTIONER_URL.to_string());
+    let auctioneer_url = env::var("AUCTIONEER_URL").unwrap_or(AUCTIONEER_URL.to_string());
     let tx_send_method: TxSendMethod = *matches
         .get_one::<TxSendMethod>("tx_send_method")
         .expect("tx-send-method is required");
@@ -165,7 +168,7 @@ async fn handle_solana_single_domain_intent(matches: &ArgMatches) -> Result<()> 
     {
         Ok(sig) => {
             println!("Transaction successful, signature: {}", sig);
-            send_signature_to_auctioner(&auctioner_url, sig).await?;
+            send_signature_to_auctioneer(&auctioneer_url, sig).await?;
             sig
         }
         Err(e) => {
@@ -183,8 +186,7 @@ async fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Res
         bs58::decode(env::var("SOLANA_KEYPAIR").expect("SOLANA_KEYPAIR must be set"))
             .into_vec()
             .expect("Failed to decode Base58 private key");
-    let auctioner_url =
-        env::var("AUCTIONER_URL").unwrap_or(AUCTIONER_URL.to_string());
+    let auctioneer_url = env::var("AUCTIONEER_URL").unwrap_or(AUCTIONEER_URL.to_string());
     let tx_send_method: TxSendMethod = matches
         .get_one::<TxSendMethod>("tx_send_method")
         .map(|x| *x)
@@ -226,7 +228,7 @@ async fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Res
     {
         Ok(sig) => {
             println!("Transaction successful, signature: {}", sig);
-            send_signature_to_auctioner(&auctioner_url, sig).await?;
+            send_signature_to_auctioneer(&auctioneer_url, sig).await?;
             sig
         }
         Err(e) => {
@@ -238,14 +240,35 @@ async fn handle_solana_ethereum_cross_domain_intent(matches: &ArgMatches) -> Res
     Ok(())
 }
 
-async fn send_signature_to_auctioner(auctioner_url: &str, sig: Signature) -> Result<()> {
-    let resp = reqwest::Client::new()
-        .post(&format!("{auctioner_url}/solana_tx_hash"))
-        .body(sig.to_string())
+async fn send_signature_to_auctioneer(auctioneer_url: &str, signature: Signature) -> Result<()> {
+    let request = SolanaTxHashRequest {
+        tx_hash: signature.to_string(),
+    };
+
+    let http_response = reqwest::Client::new()
+        .post(format!("{auctioneer_url}/solana_tx_hash"))
+        .json(&request)
         .send()
         .await?;
-    println!("Sent signature to the auctioner ({auctioner_url}). Response: {}", resp.text().await?);
+
+    println!(
+        "Status of solana_tx_hash submission: {}",
+        http_response.status()
+    );
+
+    let _response: SolanaTxHashResponse = http_response.json().await?;
+
     Ok(())
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SolanaTxHashRequest {
+    pub tx_hash: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SolanaTxHashResponse {
+    pub intent_id: String,
 }
 
 /// Generate a random intent ID.
